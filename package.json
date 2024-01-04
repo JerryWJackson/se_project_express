@@ -11,6 +11,13 @@
     "nodemon": "^3.0.2",
     "prettier": "^3.1.1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JerryWJackson/se_project_express.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JerryWJackson/se_project_express/issues"
+  },
   "scripts": {
     "lint": "npx eslint .",
     "start": "node app.js",
