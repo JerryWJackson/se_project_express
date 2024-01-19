@@ -8,7 +8,7 @@ mongoose
   .then(() => {
     console.log("Connected to DB");
   })
-  .catch((e) => console.error(e));
+  .catch((err) => console.error(err));
 
 app.use((req, res, next) => {
   req.user = {

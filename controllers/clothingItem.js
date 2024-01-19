@@ -1,44 +1,53 @@
 const ClothingItem = require("../models/clothingItem");
+const {
+  HTTP_BAD_REQUEST,
+  HTTP_NOT_FOUND,
+  HTTP_INTERNAL_SERVER_ERROR,
+} = require("../utils/errors");
 
 const createItem = (req, res) => {
   console.log(req);
   console.log(req.body);
 
-  const { name, weather, imageURL } = req.body;
+  const payload = req.body;
+  payload.owner = req.user._id;
+  console.log(payload);
 
-  ClothingItem.create({ name, weather, imageURL })
+  ClothingItem.create(payload)
     .then((item) => {
       console.log(item);
-      res.send({ data: item });
+      res.status(200).send(item);
     })
-    .catch((e) => {
-      res
-        .status(500)
-        .send({ message: "Error creating item with createItem", e });
+    .catch((err) => {
+      console.error(err);
+      console.log(err.name);
+      if (err.name === "CastError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else if (err.name === "ValidationError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else if (err.name === "AssertionError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else {
+        // if no errors match, return a response with status code 500
+        res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
+      }
     });
 };
 
 const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
-    .catch((e) => {
-      res.status(500).send({ message: "Error reading items with getItems", e });
+    .catch((err) => {
+      console.error(err);
+      console.log(err.name);
+      if (err.name === "CastError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else {
+        // if no errors match, return a response with status code 500
+        res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
+      }
     });
 };
-
-// const updateItem = (req, res) => {
-//   const { itemId } = req.params;
-//   const { imageURL } = req.body;
-
-//   ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } })
-//     .orFail()
-//     .then((item) => res.status(200).send({ data: item }))
-//     .catch((e) => {
-//       res
-//         .status(500)
-//         .send({ message: "Error updating item with updateItem", e });
-//     });
-// };
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
@@ -46,45 +55,73 @@ const deleteItem = (req, res) => {
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
     .then((item) => res.status(204).send({}))
-    .catch((e) => {
-      res
-        .status(500)
-        .send({ message: "Error deleting item with deleteItem", e });
+    .catch((err) => {
+      console.error(err);
+      console.log(err.name);
+      if (err.name === "CastError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else if (err.name === "DocumentNotFoundError") {
+        return res.status(HTTP_NOT_FOUND).send({ message: err.message });
+      } else {
+        // if no errors match, return a response with status code 500
+        res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
+      }
     });
 };
 
-const likeItem = (req, res) => ClothingItem.findByIdAndUpdate(
-  req.params.itemId,
-  { $addToSet: { likes: req.user._id } },
-  { new: true },
-)
+const likeItem = (req, res) =>
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true },
+  )
+    .orFail()
+    .then((item) => res.status(200).send(item))
+    .catch((err) => {
+      console.error(err);
+      console.log(err.name);
+      if (err.name === "CastError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else if (err.name === "ValidationError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else if (err.name === "AssertionError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else {
+        // if no errors match, return a response with status code 500
+        res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
+      }
+    });
 
-const dislikeItem = (req, res) => {
-  const { itemId } = req.params;
-  const userId = req.user._id;
+const dislikeItem = (req, res) =>
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $pull: { likes: req.user._id } }, // remove _id from the array
+    { new: true },
+  )
+    .orFail()
+    .then((item) => res.status(200).send(item))
+    .catch((err) => {
+      console.error(err);
+      console.log(err.name);
+      if (err.name === "CastError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else if (err.name === "ValidationError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else if (err.name === "AssertionError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else {
+        // if no errors match, return a response with status code 500
+        res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
+      }
+    });
 
-};
-
-module.exports.likeItem = (req, res) => ClothingItem.findByIdAndUpdate(
-  req.params.itemId,
-  { $addToSet: { likes: req.user._id } }, // add _id to the array if it's not there yet
-  { new: true },
-)
-//...
-
-module.exports.dislikeItem = (req, res) => ClothingItem.findByIdAndUpdate(
-  req.params.itemId,
-  { $pull: { likes: req.user._id } }, // remove _id from the array
-  { new: true },
-)
-module.exports.createClothingItem = (req, res) => {
+module.exports.createItem = (req, res) => {
   console.log(req.user._id);
 };
 
 module.exports = {
   createItem,
   getItems,
-  // updateItem,
   deleteItem,
   likeItem,
   dislikeItem,
