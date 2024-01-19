@@ -50,11 +50,11 @@ const getItems = (req, res) => {
 };
 
 const deleteItem = (req, res) => {
-  const { itemId } = req.params;
+  const { itemId } = req.params.itemId;
 
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => res.status(204).send({}))
+    .then((item) => res.status(200).send({}))
     .catch((err) => {
       console.error(err);
       console.log(err.name);
@@ -69,14 +69,17 @@ const deleteItem = (req, res) => {
     });
 };
 
-const likeItem = (req, res) =>
+const likeItem = (req, res) => {
+  console.log(req.params.itemId);
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
     .orFail()
-    .then((item) => res.status(200).send(item))
+    .then((item) => {
+      res.status(200).send(item);
+    })
     .catch((err) => {
       console.error(err);
       console.log(err.name);
@@ -91,6 +94,7 @@ const likeItem = (req, res) =>
         res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
       }
     });
+};
 
 const dislikeItem = (req, res) =>
   ClothingItem.findByIdAndUpdate(
@@ -103,11 +107,7 @@ const dislikeItem = (req, res) =>
     .catch((err) => {
       console.error(err);
       console.log(err.name);
-      if (err.name === "CastError") {
-        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "ValidationError") {
-        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "AssertionError") {
+      if (err.name === "ValidationError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
       } else {
         // if no errors match, return a response with status code 500
