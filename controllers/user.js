@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const { ObjectId } = require("mongodb");
 const {
   HTTP_BAD_REQUEST,
   HTTP_NOT_FOUND,
@@ -58,7 +59,7 @@ const createUser = (req, res) => {
 const getUser = (req, res) => {
   const { userId } = req.params;
 
-  User.findById(userId)
+  User.findById(ObjectId(userId))
     .orFail()
     .then((user) => res.status(200).send(user))
     .catch((err) => {
@@ -83,6 +84,8 @@ const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send({ users }))
     .catch((err) => {
+      console.error(err);
+      console.log(err.name);
       if (err.name === "DocumentNotFoundError") {
         return res.status(HTTP_NOT_FOUND).send({ message: err.message });
       } else {
