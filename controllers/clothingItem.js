@@ -6,14 +6,10 @@ const {
 } = require("../utils/errors");
 
 const createItem = (req, res) => {
-  console.log(req);
-  console.log(req.body);
+  const { name, weather, link } = req.body;
+  const owner = req.user._id;
 
-  const payload = req.body;
-  payload.owner = req.user._id;
-  console.log(payload);
-
-  ClothingItem.create(payload)
+  ClothingItem.create({ name, weather, link, owner })
     .then((item) => {
       console.log(item);
       res.status(200).send(item);
@@ -23,14 +19,12 @@ const createItem = (req, res) => {
       console.log(err.name);
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "ValidationError") {
+      } if (err.name === "ValidationError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "AssertionError") {
-        return res.status(200).send({ message: "No item with that id." });
-      } else {
-        // if no errors match, return a response with status code 500
-        res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
       }
+        // if no errors match, return a response with status code 500
+        return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
+
     });
 };
 
@@ -40,14 +34,7 @@ const getItems = (req, res) => {
     .catch((err) => {
       console.error(err);
       console.log(err.name);
-      if (err.name === "CastError") {
-        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "DocumentNotFoundError") {
-        return res.status(HTTP_NOT_FOUND).send({ message: err.message });
-      } else {
-        // if no errors match, return a response with status code 500
-        res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
-      }
+      return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
 };
 
@@ -56,20 +43,18 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => res.status(200).send({ message: "OK" }))
+    .then(() => res.send({ message: "OK" }))
     .catch((err) => {
       console.error(err);
       console.log(err.name);
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "ReferenceError") {
-        return res.status(HTTP_BAD_REQUEST).send();
-      } else if (err.name === "DocumentNotFoundError") {
+      } if (err.name === "DocumentNotFoundError") {
         return res.status(HTTP_NOT_FOUND).send({ message: err.message });
-      } else {
-        // if no errors match, return a response with status code 500
-        res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
       }
+        // if no errors match, return a response with status code 500
+        return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
+
     });
 };
 
@@ -89,16 +74,15 @@ const likeItem = (req, res) => {
       console.log(err.name);
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "ValidationError") {
-        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "AssertionError") {
-        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "DocumentNotFoundError") {
-        return res.status(HTTP_NOT_FOUND).send({ message: err.message });
-      } else {
-        // if no errors match, return a response with status code 500
-        res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
       }
+      if (err.name === "ValidationError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(HTTP_NOT_FOUND).send({ message: err.message });
+      }
+      // if no errors match, return a response with status code 500
+      return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
 };
 
@@ -111,23 +95,20 @@ const dislikeItem = (req, res) =>
     .orFail()
     .then((item) => res.status(200).send(item))
     .catch((err) => {
-      console.error(err);
-      console.log(err.name);
+      // console.error(err);
+      // console.log(err.name);
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "ValidationError") {
-        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "DocumentNotFoundError") {
-        return res.status(HTTP_NOT_FOUND).send({ message: err.message });
-      } else {
-        // if no errors match, return a response with status code 500
-        res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
       }
+      if (err.name === "ValidationError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(HTTP_NOT_FOUND).send({ message: err.message });
+      }
+      // if no errors match, return a response with status code 500
+      return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
-
-module.exports.createItem = (req, res) => {
-  console.log(req.user._id);
-};
 
 module.exports = {
   createItem,

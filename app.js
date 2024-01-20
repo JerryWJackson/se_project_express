@@ -1,5 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const helmet = require("helmet");
+
 const { PORT = 3001 } = process.env;
 const app = express();
 
@@ -10,6 +12,8 @@ mongoose
   })
   .catch((err) => console.error(err));
 
+app.use(helmet());
+
 app.use((req, res, next) => {
   req.user = {
     _id: "65a8ca5ae1fd5f77394447fe",
@@ -18,6 +22,7 @@ app.use((req, res, next) => {
 });
 
 const routes = require("./routes");
+
 app.use(express.json());
 app.use(routes);
 

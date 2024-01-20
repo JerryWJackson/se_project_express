@@ -15,21 +15,19 @@ const createUser = (req, res) => {
   User.create({ name, avatar })
     .then((user) => {
       console.log(user);
-      res.status(200).send({ data: user });
+      res.send({ data: user });
     })
     .catch((err) => {
       console.error(err);
       console.log(err.name);
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "ValidationError") {
-        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "AssertionError") {
-        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else {
-        // if no errors match, return a response with status code 500
-        res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
       }
+      if (err.name === "ValidationError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      }
+      // if no errors match, return a response with status code 500
+      return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
 };
 
@@ -38,37 +36,30 @@ const getUser = (req, res) => {
 
   User.findById(userId)
     .orFail()
-    .then((user) => res.status(200).send(user))
+    .then((user) => res.send(user))
     .catch((err) => {
       console.error(err);
       console.log(err.name);
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "AssertionError") {
+      } if (err.name === "ValidationError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "ValidationError") {
-        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "DocumentNotFoundError") {
+      } if (err.name === "DocumentNotFoundError") {
         return res.status(HTTP_NOT_FOUND).send({ message: err.message });
-      } else {
-        // if no errors match, return a response with status code 500
-        res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
       }
+        // if no errors match, return a response with status code 500
+        return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
+
     });
 };
 
 const getUsers = (req, res) => {
   User.find({})
-    .then((users) => res.status(200).send({ users }))
+    .then((users) => res.send({ users }))
     .catch((err) => {
       console.error(err);
       console.log(err.name);
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(HTTP_NOT_FOUND).send({ message: err.message });
-      } else {
-        // if no errors match, return a response with status code 500
-        res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
-      }
+      return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
 };
 
