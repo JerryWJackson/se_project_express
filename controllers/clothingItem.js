@@ -35,8 +35,6 @@ const createItem = (req, res) => {
 };
 
 const getItems = (req, res) => {
-  const { userId } = req.params
-
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((err) => {
@@ -58,13 +56,11 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => res.status(200).send())
+    .then((item) => res.status(200).send({ message: "OK" }))
     .catch((err) => {
       console.error(err);
       console.log(err.name);
       if (err.name === "CastError") {
-        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } else if (err.name === "AssertionError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
       } else if (err.name === "ReferenceError") {
         return res.status(HTTP_BAD_REQUEST).send();
