@@ -1,5 +1,5 @@
 const User = require("../models/user");
-const { ObjectId } = require("mongodb");
+
 const {
   HTTP_BAD_REQUEST,
   HTTP_NOT_FOUND,
@@ -11,29 +11,6 @@ const createUser = (req, res) => {
   console.log(req.body);
 
   const { name, avatar } = req.body;
-
-  // if (!name) {
-  //   return res
-  //     .status(HTTP_BAD_REQUEST)
-  //     .send({
-  //       message:
-  //         "user validation failed: name: cannot be null or empty.",
-  //     });
-  // } else if (!length(name) > 29) {
-  //   return res
-  //     .status(HTTP_BAD_REQUEST)
-  //     .send({
-  //       message:
-  //       "user validation failed: name: must be 2 or more characters long.",
-  //     });
-  // } else if (!length(name) > 29) {
-  //   return res
-  //     .status(HTTP_BAD_REQUEST)
-  //     .send({
-  //       message:
-  //         "user validation failed: name: must be 30 or less characters long.",
-  //     });
-  // }
 
   User.create({ name, avatar })
     .then((user) => {
@@ -59,7 +36,7 @@ const createUser = (req, res) => {
 const getUser = (req, res) => {
   const { userId } = req.params;
 
-  User.findById(ObjectId(userId))
+  User.findById(userId)
     .orFail()
     .then((user) => res.status(200).send(user))
     .catch((err) => {

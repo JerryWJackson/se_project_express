@@ -26,7 +26,7 @@ const createItem = (req, res) => {
       } else if (err.name === "ValidationError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
       } else if (err.name === "AssertionError") {
-        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+        return res.status(200).send({ message: "No item with that id." });
       } else {
         // if no errors match, return a response with status code 500
         res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
@@ -35,6 +35,8 @@ const createItem = (req, res) => {
 };
 
 const getItems = (req, res) => {
+  const { userId } = req.params
+
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((err) => {
@@ -42,6 +44,8 @@ const getItems = (req, res) => {
       console.log(err.name);
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else if (err.name === "DocumentNotFoundError") {
+        return res.status(HTTP_NOT_FOUND).send({ message: err.message });
       } else {
         // if no errors match, return a response with status code 500
         res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
@@ -50,16 +54,20 @@ const getItems = (req, res) => {
 };
 
 const deleteItem = (req, res) => {
-  const { itemId } = req.params.itemId;
-
+  console.log(req.params);
+  const { itemId } = req.params;
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => res.status(200).send({}))
+    .then((item) => res.status(200).send())
     .catch((err) => {
       console.error(err);
       console.log(err.name);
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else if (err.name === "AssertionError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else if (err.name === "ReferenceError") {
+        return res.status(HTTP_BAD_REQUEST).send();
       } else if (err.name === "DocumentNotFoundError") {
         return res.status(HTTP_NOT_FOUND).send({ message: err.message });
       } else {
@@ -89,6 +97,8 @@ const likeItem = (req, res) => {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
       } else if (err.name === "AssertionError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else if (err.name === "DocumentNotFoundError") {
+        return res.status(HTTP_NOT_FOUND).send({ message: err.message });
       } else {
         // if no errors match, return a response with status code 500
         res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
@@ -107,8 +117,12 @@ const dislikeItem = (req, res) =>
     .catch((err) => {
       console.error(err);
       console.log(err.name);
-      if (err.name === "ValidationError") {
+      if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else if (err.name === "ValidationError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      } else if (err.name === "DocumentNotFoundError") {
+        return res.status(HTTP_NOT_FOUND).send({ message: err.message });
       } else {
         // if no errors match, return a response with status code 500
         res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
