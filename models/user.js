@@ -1,21 +1,59 @@
-const mongoose = require('mongoose');
-const validator = require('validator');
+const mongoose = require("mongoose");
+const validator = require("validator");
+const bcrypt = require("bcrypt");
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    minLength: [2, 'Must be a minimum of 2 characters'],
-    maxLength: [30, 'Must be a maximum of 30 characters'],
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      index: true,
+      minLength: [2, "Must be a minimum of 2 characters"],
+      maxLength: [30, "Must be a maximum of 30 characters"],
+    },
+    avatar: {
+      type: String,
+      required: true,
+      validate: {
+        validator: (v) => validator.isURL(v),
+        message: "You must enter a valid URL",
+      },
+    },
+    email: {
+      type: String,
+      required: true,
+      index: true,
+      unique: true,
+      validate: {
+        validator: (v) => validator.isEmail(v),
+        message: "You must enter a valid email address",
+      },
+    },
+    password: {
+      type: String,
+      required: true,
+      select: false,
+    },
   },
-  avatar: {
-    type: String,
-    required: true,
-    validate: {
-      validator: (v) => validator.isURL(v),
-      message: 'You must enter a valid URL',
+  { timestamps: true },
+);
+userSchema.statics.findUserByCredentials = function findUserByCredentials(
+  email,
+  password,
+) {
+  return this.findOne({ email }).then((user) => {
+    if (!user) {
+      return Promise.reject(new Error("Incorrect email or password"));
     }
-  },
-});
 
-module.exports = mongoose.model('user', userSchema);
+    return bcrypt.compare(password, user.password).then((matched) => {
+      if (!matched) {
+        return Promise.reject(new Error("Incorrect email or password"));
+      }
+
+      return user;
+    });
+  });
+};
+
+module.exports = mongoose.model("user", userSchema);
