@@ -1,4 +1,6 @@
 const User = require("../models/user");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const JWT_SECRET = require("../utils/config");
 
 const {
@@ -8,16 +10,16 @@ const {
 } = require("../utils/errors");
 
 const createUser = (req, res) => {
-  console.log(req);
-  console.log(req.body);
-
   const { name, avatar, email, password } = req.body;
 
-  User.create({ name, avatar, email, password })
-    .then((user) => {
-      console.log(user);
-      res.send({ data: user });
-    })
+  bcrypt
+    .hash(passord, 10)
+    .then((hash) => User.create({ name, avatar, email, password }))
+    .then((user) =>
+      res
+        .status(201)
+        .send({ name: user.name, avatar: user.avatar, email: user.email }),
+    )
     .catch((err) => {
       console.error(err);
       console.log(err.name);
@@ -36,17 +38,19 @@ const createUser = (req, res) => {
 };
 
 const login = (req, res) => {
-  const {email, password} = req.params;
+  const { email, password } = req.params;
 
-  User.findUserByCrendtials(email, password)
-  .then((user) => {
-    const token = jwt.sign({ _id: user._id }, JWT_SECRET, {expiresIn: "7d",});
-    res.status(200).send(token);
-  })
-  .catch((err) => {
-    res.status(401).send({ message: err.message});
-  });
-}
+  User.findUserByCrendentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      res.status(200).send(token);
+    })
+    .catch((err) => {
+      res.status(401).send({ message: err.message });
+    });
+};
 
 const getUser = (req, res) => {
   const { userId } = req.params;
