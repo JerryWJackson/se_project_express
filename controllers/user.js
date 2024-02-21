@@ -1,20 +1,20 @@
-const User = require("../models/user");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = require("../utils/config");
-
+const User = require("../models/user");
 const {
   HTTP_BAD_REQUEST,
   HTTP_NOT_FOUND,
   HTTP_INTERNAL_SERVER_ERROR,
+  AUTHORIZATION_ERROR,
 } = require("../utils/errors");
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
   bcrypt
-    .hash(passord, 10)
-    .then((hash) => User.create({ name, avatar, email, password }))
+    .hash(password, 10)
+    .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) =>
       res
         .status(201)
@@ -40,15 +40,23 @@ const createUser = (req, res) => {
 const login = (req, res) => {
   const { email, password } = req.params;
 
-  User.findUserByCrendentials(email, password)
+  User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.status(200).send(token);
+      res.status(200).send({token});
     })
     .catch((err) => {
-      res.status(401).send({ message: err.message });
+      if (!email || !password) {
+        return res
+          .status(HTTP_BAD_REQUEST)
+          .send({ message: "Invalid data" });
+      }
+
+      return res
+        .status(AUTHORIZATION_ERROR)
+        .send({ message: "Authorization error" });
     });
 };
 
@@ -89,9 +97,35 @@ const getUsers = (req, res) => {
     });
 };
 
+const updateProfile = (res, req) => {
+  const { userId } = req.param;
+  const { name, avatar } = req.body;
+  User.findByIdAndUpdate(
+    userId,
+    { name, avatar },
+    {
+      new: true,
+      runValidators: true,
+      upsert: true,
+    },
+  )
+    .orFail()
+    .then((user) => res.status(200).send({ data: user }))
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND_ERROR).send({ message: err.message });
+      } else if (err.name === "CastError") {
+        return res.status(BAD_REQUEST_ERROR).send({ message: err.message });
+      }
+      return res.status(INTERNAL_SERVER_ERROR).send({ message: err.message });
+    });
+};
+
 module.exports = {
   createUser,
   login,
   getUser,
   getUsers,
+  updateProfile,
 };
