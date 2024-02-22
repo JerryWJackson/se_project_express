@@ -7,7 +7,7 @@ const {
   likeItem,
   dislikeItem,
 } = require("../controllers/clothingItem");
-const { auth } = require("../middleware/auth");
+const { auth } = require("../middlewares/auth");
 // CRUD
 
 // Create
