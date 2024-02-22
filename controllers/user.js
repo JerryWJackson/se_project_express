@@ -7,6 +7,7 @@ const {
   HTTP_NOT_FOUND,
   HTTP_INTERNAL_SERVER_ERROR,
   AUTHORIZATION_ERROR,
+  CONFLICT_ERROR,
 } = require("../utils/errors");
 
 const createUser = (req, res) => {
