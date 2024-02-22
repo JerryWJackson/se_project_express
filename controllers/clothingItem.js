@@ -48,14 +48,7 @@ const deleteItem = (req, res) => {
 
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => {
-      if (!item.owner === req.user._id) {
-        const error = AUTHORIZATION_ERROR;
-        error.statusCode = 403;
-        throw error;
-      }
-      res.send({ message: "OK" });
-    })
+    .then((item) => res.send({ message: "OK" }))
     .catch((err) => {
       console.error(err);
       console.log(err.name);
