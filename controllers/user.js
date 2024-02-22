@@ -7,6 +7,7 @@ const {
   HTTP_NOT_FOUND,
   HTTP_INTERNAL_SERVER_ERROR,
   AUTHORIZATION_ERROR,
+  FORBIDDEN_ERROR,
   CONFLICT_ERROR,
 } = require("../utils/errors");
 
@@ -86,11 +87,21 @@ const getCurrentUser = (req, res) => {
     });
 };
 
-const updateProfile = (res, req) => {
+const updateProfile = (req, res) => {
   const userId = req.user._id;
-  const { name, avatar } = req.params;
-  User.findByIdAndUpdate(userId, { name, avatar }, { runValidators: true })
-    .orFail()
+  const { name, avatar } = req.body;
+  User.findByIdAndUpdate(
+    userId,
+    { name, avatar },
+    { new: true, runValidators: true },
+  )
+    .then((user) => {
+      if (user._id.toString() !== req.user_id) {
+        const error = FORBIDDEN_ERROR;
+        error.status = 403;
+        throw error;
+      }
+    })
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       console.error(err);
