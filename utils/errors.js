@@ -3,6 +3,6 @@ module.exports = {
   AUTHORIZATION_ERROR: 401,
   FORBIDDEN_ERROR: 403,
   HTTP_NOT_FOUND: 404, // DocumentNotFoundError
-  CONFLICT: 409,
+  CONFLICT_ERROR: 409,
   HTTP_INTERNAL_SERVER_ERROR: 500, // default error
 };

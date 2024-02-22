@@ -1,12 +1,13 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = require("../utils/config");
+const { JWT_SECRET } = require("../utils/config");
 const User = require("../models/user");
 const {
   HTTP_BAD_REQUEST,
   HTTP_NOT_FOUND,
   HTTP_INTERNAL_SERVER_ERROR,
   AUTHORIZATION_ERROR,
+  CONFLICT_ERROR,
 } = require("../utils/errors");
 
 const createUser = (req, res) => {
@@ -24,6 +25,9 @@ const createUser = (req, res) => {
       console.error(err);
       console.log(err.name);
       // don't forget to figure out how to throw the 11000 MongoDB dupliocate error when needed
+      if (err.code === 11000) {
+        return res.status(CONFLICT_ERROR).send({ message: "Duplicate email" });
+      }
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
       }
@@ -38,7 +42,7 @@ const createUser = (req, res) => {
 };
 
 const login = (req, res) => {
-  const { email, password } = req.params;
+  const { email, password } = req.body;
 
   User.findUserByCredentials(email, password)
     .then((user) => {
@@ -62,7 +66,7 @@ const login = (req, res) => {
 };
 
 const getUser = (req, res) => {
-  const { userId } = req.params;
+  const userId = req.user._id;
 
   User.findById(userId)
     .orFail()
@@ -90,8 +94,6 @@ const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ users }))
     .catch((err) => {
-      console.error(err);
-      console.log(err.name);
       return res
         .status(HTTP_INTERNAL_SERVER_ERROR)
         .send({ message: err.message });
@@ -99,8 +101,9 @@ const getUsers = (req, res) => {
 };
 
 const updateProfile = (res, req) => {
-  const { userId } = req.param;
-  const { name, avatar } = req.body;
+  const userId = req.user._id;
+  console.log(req);
+  const { name, avatar } = req.params;
   User.findByIdAndUpdate(
     userId,
     { name, avatar },
