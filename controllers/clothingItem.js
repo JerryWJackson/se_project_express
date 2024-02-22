@@ -53,7 +53,8 @@ const deleteItem = (req, res) => {
       console.log('Item owner is', item.owner);
       console.log('requester is', req.user._id);
       if (item.owner.toString() !== req.user._id.toString()) {
-        const error = FORBIDDEN_ERROR;
+        const error = {};
+        error.name = "ThatItemIsNotYoursError";
         error.status = 403;
         throw error;
       }
@@ -61,12 +62,14 @@ const deleteItem = (req, res) => {
   })
     .catch((err) => {
       console.error(err);
-      console.log(err.name);
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
       }
       if (err.name === "DocumentNotFoundError") {
         return res.status(HTTP_NOT_FOUND).send({ message: err.message });
+      }
+      if (err.name === "ThatItemIsNotYoursError") {
+        return res.status(FORBIDDEN_ERROR).send({ message: 'That Item Is Not Yours' });
       }
       // if no errors match, return a response with status code 500
       return res
