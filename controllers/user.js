@@ -7,7 +7,6 @@ const {
   HTTP_NOT_FOUND,
   HTTP_INTERNAL_SERVER_ERROR,
   AUTHORIZATION_ERROR,
-  CONFLICT_ERROR,
 } = require("../utils/errors");
 
 const createUser = (req, res) => {
@@ -49,14 +48,12 @@ const login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.status(200).send({token});
+      res.status(200).send({ token });
     })
     .catch((err) => {
       console.error(err);
       if (!email || !password) {
-        return res
-          .status(HTTP_BAD_REQUEST)
-          .send({ message: "Invalid data" });
+        return res.status(HTTP_BAD_REQUEST).send({ message: "Invalid data" });
       }
 
       return res
@@ -93,11 +90,9 @@ const getUser = (req, res) => {
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ users }))
-    .catch((err) => {
-      return res
-        .status(HTTP_INTERNAL_SERVER_ERROR)
-        .send({ message: err.message });
-    });
+    .catch((err) =>
+      res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message }),
+    );
 };
 
 const updateProfile = (res, req) => {
@@ -123,7 +118,9 @@ const updateProfile = (res, req) => {
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
       }
-      return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return res
+        .status(HTTP_INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 };
 
