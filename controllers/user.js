@@ -97,11 +97,16 @@ const updateProfile = (req, res) => {
   )
     .then((user) => {
       if (user._id.toString() !== req.user._id) {
-        console.log('requesting user does not match user you want to update.')
+        console.log("requesting user does not match user you want to update.");
         const error = FORBIDDEN_ERROR;
         error.status = 403;
         throw error;
       }
+      return user;
+    })
+    .then((user) => {
+      console.log({ data: user });
+      return user;
     })
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {

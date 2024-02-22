@@ -3,6 +3,7 @@ const {
   HTTP_BAD_REQUEST,
   HTTP_NOT_FOUND,
   HTTP_INTERNAL_SERVER_ERROR,
+  FORBIDDEN_ERROR,
 } = require("../utils/errors");
 
 const createItem = (req, res) => {
@@ -44,10 +45,20 @@ const getItems = (req, res) => {
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
+  console.log('item is', itemId)
 
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then(() => res.send({ message: "OK" }))
+    .then((item) => {
+      console.log('Item owner is', item.owner);
+      console.log('requester is', req.user._id);
+      if (item.owner.toString() !== req.user._id.toString()) {
+        const error = FORBIDDEN_ERROR;
+        error.status = 403;
+        throw error;
+      }
+      res.send({ message: "OK" })
+  })
     .catch((err) => {
       console.error(err);
       console.log(err.name);
