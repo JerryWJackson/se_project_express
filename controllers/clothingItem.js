@@ -41,6 +41,8 @@ const getItems = (req, res) => {
 const deleteItem = (req, res) => {
   console.log(req.params);
   const { itemId } = req.params;
+  const userId = req.user._id;
+
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
     .then(() => res.send({ message: "OK" }))

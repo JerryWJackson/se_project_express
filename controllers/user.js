@@ -63,15 +63,13 @@ const login = (req, res) => {
     });
 };
 
-const getUser = (req, res) => {
+const getCurrentUser = (req, res) => {
   const userId = req.user._id;
 
   User.findById(userId)
     .orFail()
     .then((user) => res.send(user))
     .catch((err) => {
-      console.error(err);
-      console.log(err.name);
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
       }
@@ -88,17 +86,8 @@ const getUser = (req, res) => {
     });
 };
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.send({ users }))
-    .catch((err) =>
-      res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message }),
-    );
-};
-
 const updateProfile = (res, req) => {
   const userId = req.user._id;
-  console.log(req);
   const { name, avatar } = req.params;
   User.findByIdAndUpdate(
     userId,
@@ -128,7 +117,6 @@ const updateProfile = (res, req) => {
 module.exports = {
   createUser,
   login,
-  getUser,
-  getUsers,
+  getCurrentUser,
   updateProfile,
 };
