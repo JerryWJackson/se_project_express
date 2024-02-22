@@ -3,6 +3,7 @@ const {
   HTTP_BAD_REQUEST,
   HTTP_NOT_FOUND,
   HTTP_INTERNAL_SERVER_ERROR,
+  AUTHORIZATION_ERROR,
 } = require("../utils/errors");
 
 const createItem = (req, res) => {
@@ -19,12 +20,14 @@ const createItem = (req, res) => {
       console.log(err.name);
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } if (err.name === "ValidationError") {
+      }
+      if (err.name === "ValidationError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
       }
-        // if no errors match, return a response with status code 500
-        return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
-
+      // if no errors match, return a response with status code 500
+      return res
+        .status(HTTP_INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 };
 
@@ -34,29 +37,38 @@ const getItems = (req, res) => {
     .catch((err) => {
       console.error(err);
       console.log(err.name);
-      return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return res
+        .status(HTTP_INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 };
 
 const deleteItem = (req, res) => {
-  console.log(req.params);
   const { itemId } = req.params;
-  const userId = req.user._id;
 
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then(() => res.send({ message: "OK" }))
+    .then((item) => {
+      if (!item.owner === req.user._id) {
+        const error = AUTHORIZATION_ERROR;
+        error.statusCode = 403;
+        throw error;
+      }
+      res.send({ message: "OK" });
+    })
     .catch((err) => {
       console.error(err);
       console.log(err.name);
       if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      } if (err.name === "DocumentNotFoundError") {
+      }
+      if (err.name === "DocumentNotFoundError") {
         return res.status(HTTP_NOT_FOUND).send({ message: err.message });
       }
-        // if no errors match, return a response with status code 500
-        return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
-
+      // if no errors match, return a response with status code 500
+      return res
+        .status(HTTP_INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 };
 
@@ -84,7 +96,9 @@ const likeItem = (req, res) => {
         return res.status(HTTP_NOT_FOUND).send({ message: err.message });
       }
       // if no errors match, return a response with status code 500
-      return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return res
+        .status(HTTP_INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 };
 
@@ -109,7 +123,9 @@ const dislikeItem = (req, res) =>
         return res.status(HTTP_NOT_FOUND).send({ message: err.message });
       }
       // if no errors match, return a response with status code 500
-      return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
+      return res
+        .status(HTTP_INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 
 module.exports = {
