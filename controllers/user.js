@@ -48,6 +48,7 @@ const login = (req, res) => {
       res.status(200).send({token});
     })
     .catch((err) => {
+      console.error(err);
       if (!email || !password) {
         return res
           .status(HTTP_BAD_REQUEST)
@@ -115,7 +116,8 @@ const updateProfile = (res, req) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
         return res.status(HTTP_NOT_FOUND).send({ message: err.message });
-      } else if (err.name === "CastError") {
+      }
+      if (err.name === "CastError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
       }
       return res.status(HTTP_INTERNAL_SERVER_ERROR).send({ message: err.message });
