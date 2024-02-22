@@ -96,7 +96,8 @@ const updateProfile = (req, res) => {
     { new: true, runValidators: true },
   )
     .then((user) => {
-      if (user._id.toString() !== req.user_id) {
+      if (user._id.toString() !== req.user._id) {
+        console.log('requesting user does not match user you want to update.')
         const error = FORBIDDEN_ERROR;
         error.status = 403;
         throw error;
