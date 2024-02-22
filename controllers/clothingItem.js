@@ -3,7 +3,6 @@ const {
   HTTP_BAD_REQUEST,
   HTTP_NOT_FOUND,
   HTTP_INTERNAL_SERVER_ERROR,
-  AUTHORIZATION_ERROR,
 } = require("../utils/errors");
 
 const createItem = (req, res) => {
@@ -48,7 +47,7 @@ const deleteItem = (req, res) => {
 
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => res.send({ message: "OK" }))
+    .then(() => res.send({ message: "OK" }))
     .catch((err) => {
       console.error(err);
       console.log(err.name);
