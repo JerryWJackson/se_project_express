@@ -46,7 +46,7 @@ const getItems = (req, res) => {
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
-  ClothingItem.findById(itemId)
+  ClothingItem.findById({ _id: itemId })
     .orFail()
     .then((item) => {
       if (item.owner.toString() !== req.user._id.toString()) {
@@ -54,21 +54,21 @@ const deleteItem = (req, res) => {
           .status(FORBIDDEN_ERROR)
           .send({ message: "That Item Is Not Yours" });
       }
-      return ClothingItem.deleteOne({_id: itemId})
-        .then(() => res.send({ message: "Item successfully deleted." }))
-        .catch((err) => {
-          console.error(err);
-          if (err.name === "CastError") {
-            return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-          }
-          if (err.name === "DocumentNotFoundError") {
-            return res.status(HTTP_NOT_FOUND).send({ message: err.message });
-          }
-          // if no errors match, return a response with status code 500
-          return res
-            .status(HTTP_INTERNAL_SERVER_ERROR)
-            .send({ message: err.message });
-        });
+      return ClothingItem.deleteOne({ _id: itemId });
+    })
+    .then(() => res.send({ message: "Item successfully deleted." }))
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "CastError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(HTTP_NOT_FOUND).send({ message: err.message });
+      }
+      // if no errors match, return a response with status code 500
+      return res
+        .status(HTTP_INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 };
 
