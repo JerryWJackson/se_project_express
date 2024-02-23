@@ -54,7 +54,7 @@ const deleteItem = (req, res) => {
           .status(FORBIDDEN_ERROR)
           .send({ message: "That Item Is Not Yours" });
       }
-      return ClothingItem.deleteOne(itemId)
+      return ClothingItem.deleteOne({_id: itemId})
         .then(() => res.send({ message: "Item successfully deleted." }))
         .catch((err) => {
           console.error(err);
