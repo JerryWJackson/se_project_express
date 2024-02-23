@@ -55,20 +55,20 @@ const deleteItem = (req, res) => {
           .send({ message: "That Item Is Not Yours" });
       }
       return ClothingItem.DeleteOne(itemId)
-        .then(() => res.send({ message: "Item successfully deleted." }));
-    })
-    .catch((err) => {
-      console.error(err);
-      if (err.name === "CastError") {
-        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
-      }
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(HTTP_NOT_FOUND).send({ message: err.message });
-      }
-      // if no errors match, return a response with status code 500
-      return res
-        .status(HTTP_INTERNAL_SERVER_ERROR)
-        .send({ message: err.message });
+        .then(() => res.send({ message: "Item successfully deleted." }))
+        .catch((err) => {
+          console.error(err);
+          if (err.name === "CastError") {
+            return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+          }
+          if (err.name === "DocumentNotFoundError") {
+            return res.status(HTTP_NOT_FOUND).send({ message: err.message });
+          }
+          // if no errors match, return a response with status code 500
+          return res
+            .status(HTTP_INTERNAL_SERVER_ERROR)
+            .send({ message: err.message });
+        });
     });
 };
 
