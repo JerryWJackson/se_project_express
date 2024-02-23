@@ -45,21 +45,18 @@ const getItems = (req, res) => {
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
-  console.log('item is', itemId)
 
-  ClothingItem.findByIdAndDelete(itemId)
+  ClothingItem.findById(itemId)
     .orFail()
     .then((item) => {
-      console.log('Item owner is', item.owner);
-      console.log('requester is', req.user._id);
       if (item.owner.toString() !== req.user._id.toString()) {
-        const error = {};
-        error.name = "ThatItemIsNotYoursError";
-        error.status = 403;
-        throw error;
+        return res
+          .status(FORBIDDEN_ERROR)
+          .send({ message: "That Item Is Not Yours" });
       }
-      res.send({ message: "OK" })
-  })
+      return ClothingItem.DeleteOne(itemId)
+        .then(() => res.send({ message: "Item successfully deleted." }));
+    })
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {
@@ -67,9 +64,6 @@ const deleteItem = (req, res) => {
       }
       if (err.name === "DocumentNotFoundError") {
         return res.status(HTTP_NOT_FOUND).send({ message: err.message });
-      }
-      if (err.name === "ThatItemIsNotYoursError") {
-        return res.status(FORBIDDEN_ERROR).send({ message: 'That Item Is Not Yours' });
       }
       // if no errors match, return a response with status code 500
       return res

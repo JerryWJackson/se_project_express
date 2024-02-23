@@ -7,7 +7,6 @@ const {
   HTTP_NOT_FOUND,
   HTTP_INTERNAL_SERVER_ERROR,
   AUTHORIZATION_ERROR,
-  FORBIDDEN_ERROR,
   CONFLICT_ERROR,
 } = require("../utils/errors");
 
@@ -96,15 +95,6 @@ const updateProfile = (req, res) => {
     { new: true, runValidators: true },
   )
     .then((user) => {
-      if (user._id.toString() !== req.user._id) {
-        console.log("requesting user does not match user you want to update.");
-        const error = FORBIDDEN_ERROR;
-        error.status = 403;
-        throw error;
-      }
-      return user;
-    })
-    .then((user) => {
       console.log({ data: user });
       return user;
     })
@@ -115,6 +105,9 @@ const updateProfile = (req, res) => {
         return res.status(HTTP_NOT_FOUND).send({ message: err.message });
       }
       if (err.name === "CastError") {
+        return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
+      }
+      if (err.name === "ValidationError") {
         return res.status(HTTP_BAD_REQUEST).send({ message: err.message });
       }
       return res
