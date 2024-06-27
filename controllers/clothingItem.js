@@ -7,6 +7,7 @@ const {
 } = require("../utils/errors");
 
 const createItem = (req, res) => {
+  console.log(req.user);
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
