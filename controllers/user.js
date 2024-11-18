@@ -11,7 +11,7 @@ const {
 } = require("../utils/errors");
 
 const createUser = (req, res) => {
-  const { name, avatar, email, password } = req.body;
+  const { name, avatar, email, password } = req.body.user;
 
   bcrypt
     .hash(password, 10)
